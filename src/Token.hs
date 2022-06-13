@@ -15,6 +15,8 @@ data ByteCode
       WriteVar Text.Text Int
     | -- | Return value at the top of the stack.
       ReturnVal
+    | -- | Set LR = PC
+      SavePC
     | -- | Pushes PC to the stack.
       ReadPC
     | -- | Set PC to the value at the top of the stack.

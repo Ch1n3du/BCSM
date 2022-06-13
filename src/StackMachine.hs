@@ -9,6 +9,7 @@ module StackMachine (
     readVar,
     writeVar,
     returnVal,
+    savePC,
     readPC,
     loadPC,
     readAC,
@@ -23,15 +24,15 @@ module StackMachine (
     add,
     sub,
     mul,
-    div,
+    div_,
     debugSM
 ) where
 
 import Control.Lens hiding (element)
-import qualified Control.Lens.Getter as Getter 
 import qualified Data.Map            as Map
 import qualified Data.Text           as Text
 import qualified Data.Vector         as Vector
+import qualified Control.Lens.Getter as Getter 
 
 import Stack
 import Token
@@ -49,6 +50,18 @@ data StackMachine = StackMachine
     deriving (Show)
 
 makeLenses ''StackMachine
+
+smFromTokens :: Vector.Vector Token -> StackMachine
+smFromTokens ins =  
+    StackMachine
+    { _smStack        = []
+    , _smInstructions = ins
+    , _pc             = 0
+    , _ac             = 0
+    , _lr             = 0
+    , _smEnviroment   = Map.empty
+    }
+
 
 data CompErr
     = VarNone Int Text.Text
@@ -69,10 +82,6 @@ incrementSmPc = pc %~ (+ 1)
 pushSmStack :: Int -> StackMachine -> StackMachine
 pushSmStack x sm =  smStack %~ (\s -> push x s) $ sm
 
-{- ^. -> view
- %~ -> on
- .~ -> set
--}
 
 -- | Loads an value onto the stack.
 loadVal :: Int -> StackMachine -> CompRes
@@ -102,6 +111,9 @@ returnVal ln sm =
         Just (_, x) -> Right $ ValRes x
     
 type SmRegisterGetter = Getter.Getting Int StackMachine Int 
+
+savePC :: StackMachine -> CompRes
+savePC sm = Right $ SMRes $ lr .~ (sm ^. pc) $ sm
 
 readSmReg :: SmRegisterGetter -> StackMachine -> CompRes
 readSmReg regGetter sm = Right $ SMRes $ incrementSmPc $ newSm
