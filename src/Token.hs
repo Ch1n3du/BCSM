@@ -19,14 +19,14 @@ data ByteCode
       SavePC
     | -- | Pushes PC to the stack.
       ReadPC
-    | -- | Set PC to the value at the top of the stack.
-      LoadPC
     | -- | Pushes AC to the stack.
       ReadAC
-    | -- | Set AC to the value at the top of the stack.
-      LoadAC
     | -- | Pushes value in LR to the stack.
       ReadLR
+    | -- | Set PC to the value at the top of the stack.
+      LoadPC
+    | -- | Set AC to the value at the top of the stack.
+      LoadAC
     | -- | Set PC to the value at the top of the stack.
       LoadLR
     | -- | if ac == o then pc = ac

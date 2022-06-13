@@ -21,15 +21,15 @@ runToken (ln, tok) prev  = case prev of
         ReturnVal    -> returnVal ln sm
         SavePC       -> savePC sm
         ReadPC       -> readPC sm
-        LoadPC       -> loadPC ln sm
         ReadAC       -> readAC sm
-        LoadAC       -> loadAC ln  sm
         ReadLR       -> readLR sm
+        LoadPC       -> loadPC ln sm
+        LoadAC       -> loadAC ln  sm
         LoadLR       -> loadLR ln sm
         JE           -> je sm
         JL           -> jl sm
-        JLE          -> jle sm
         JG           -> jg sm
+        JLE          -> jle sm
         JGE          -> jge sm
         Add          -> add ln sm
         Sub          -> sub ln sm
