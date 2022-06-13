@@ -1,14 +1,20 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE NoRebindableSyntax #-}
 {-# OPTIONS_GHC -fno-warn-missing-import-lists #-}
+
 module Paths_BCSM (
     version,
-    getBinDir, getLibDir, getDynLibDir, getDataDir, getLibexecDir,
-    getDataFileName, getSysconfDir
-  ) where
+    getBinDir,
+    getLibDir,
+    getDynLibDir,
+    getDataDir,
+    getLibexecDir,
+    getDataFileName,
+    getSysconfDir,
+) where
 
 import qualified Control.Exception as Exception
-import Data.Version (Version(..))
+import Data.Version (Version (..))
 import System.Environment (getEnv)
 import Prelude
 
@@ -26,13 +32,12 @@ catchIO :: IO a -> (Exception.IOException -> IO a) -> IO a
 catchIO = Exception.catch
 
 version :: Version
-version = Version [0,1,0,0] []
+version = Version [0, 1, 0, 0] []
 bindir, libdir, dynlibdir, datadir, libexecdir, sysconfdir :: FilePath
-
-bindir     = "/home/radio-knight/.cabal/bin"
-libdir     = "/home/radio-knight/.cabal/lib/x86_64-linux-ghc-8.10.5/BCSM-0.1.0.0-inplace-BCSM-exe"
-dynlibdir  = "/home/radio-knight/.cabal/lib/x86_64-linux-ghc-8.10.5"
-datadir    = "/home/radio-knight/.cabal/share/x86_64-linux-ghc-8.10.5/BCSM-0.1.0.0"
+bindir = "/home/radio-knight/.cabal/bin"
+libdir = "/home/radio-knight/.cabal/lib/x86_64-linux-ghc-8.10.5/BCSM-0.1.0.0-inplace-BCSM-exe"
+dynlibdir = "/home/radio-knight/.cabal/lib/x86_64-linux-ghc-8.10.5"
+datadir = "/home/radio-knight/.cabal/share/x86_64-linux-ghc-8.10.5/BCSM-0.1.0.0"
 libexecdir = "/home/radio-knight/.cabal/libexec/x86_64-linux-ghc-8.10.5/BCSM-0.1.0.0"
 sysconfdir = "/home/radio-knight/.cabal/etc"
 
@@ -46,5 +51,5 @@ getSysconfDir = catchIO (getEnv "BCSM_sysconfdir") (\_ -> return sysconfdir)
 
 getDataFileName :: FilePath -> IO FilePath
 getDataFileName name = do
-  dir <- getDataDir
-  return (dir ++ "/" ++ name)
+    dir <- getDataDir
+    return (dir ++ "/" ++ name)

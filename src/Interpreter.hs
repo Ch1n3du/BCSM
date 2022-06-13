@@ -3,18 +3,17 @@ module Interpreter (
 ) where
 
 import qualified Data.Vector as Vector
+import Control.Lens hiding (element)
 
 import StackMachine
 import Token
 
 
-runToken :: Token -> CompRes -> CompRes
-runToken (ln, tok) prev  = case prev of
-  Left x -> Left x
-  Right r -> case r of
-    ValRes n   -> Right $ ValRes n
-    DebugRes s -> Right $ DebugRes s
-    SMRes sm   -> case tok of
+runToken :: StackMachine -> CompRes
+runToken sm = 
+  case pc_ >= Vector.length ins of
+    True -> Right $ NullExit
+    False -> case bc of
         LoadVal v    -> loadVal v sm
         ReadVar l    -> readVar ln l sm
         WriteVar l v -> writeVar ln l v sm
@@ -36,6 +35,7 @@ runToken (ln, tok) prev  = case prev of
         Mul          -> mul ln sm
         Div          -> div_ ln sm
         DebugSM      -> debugSM sm
-
-runTokens :: Vector.Vector Token -> CompRes
-runTokens = foldr 
+  where
+    ins = sm ^. smInstructions
+    pc_ = sm ^. pc
+    (ln, bc) = ins Vector.! pc_

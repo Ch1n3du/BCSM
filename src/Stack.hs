@@ -21,10 +21,10 @@ popTwo :: Stack a -> Maybe (Stack a, a, a)
 popTwo xs =
     case xs of
         a1 : a2 : as -> Just (as, a1, a2)
-        _            ->  Nothing
+        _ -> Nothing
 
 popApply :: (a -> a -> a) -> Stack a -> Maybe (Stack a)
 popApply f s =
     case popTwo s of
         Just (xs, a1, a2) -> Just $ (f a1 a2) : xs
-        _                 -> Nothing
+        _ -> Nothing

@@ -2,6 +2,12 @@
 
 module StackMachine (
     StackMachine (..),
+    smStack,
+    smInstructions,
+    pc,
+    ac,
+    lr,
+    smEnviroment,
     CompErr (..),
     CompOk (..),
     CompRes (..),
@@ -25,14 +31,14 @@ module StackMachine (
     sub,
     mul,
     div_,
-    debugSM
+    debugSM,
 ) where
 
 import Control.Lens hiding (element)
-import qualified Data.Map            as Map
-import qualified Data.Text           as Text
-import qualified Data.Vector         as Vector
-import qualified Control.Lens.Getter as Getter 
+import qualified Control.Lens.Getter as Getter
+import qualified Data.Map as Map
+import qualified Data.Text as Text
+import qualified Data.Vector as Vector
 
 import Stack
 import Token
@@ -52,16 +58,15 @@ data StackMachine = StackMachine
 makeLenses ''StackMachine
 
 smFromTokens :: Vector.Vector Token -> StackMachine
-smFromTokens ins =  
+smFromTokens ins =
     StackMachine
-    { _smStack        = []
-    , _smInstructions = ins
-    , _pc             = 0
-    , _ac             = 0
-    , _lr             = 0
-    , _smEnviroment   = Map.empty
-    }
-
+        { _smStack = []
+        , _smInstructions = ins
+        , _pc = 0
+        , _ac = 0
+        , _lr = 0
+        , _smEnviroment = Map.empty
+        }
 
 data CompErr
     = VarNone Int Text.Text
@@ -72,16 +77,15 @@ data CompOk
     = SMRes StackMachine
     | ValRes Int
     | DebugRes Text.Text
+    | NullExit
 
 type CompRes = Either CompErr CompOk
-
 
 incrementSmPc :: StackMachine -> StackMachine
 incrementSmPc = pc %~ (+ 1)
 
 pushSmStack :: Int -> StackMachine -> StackMachine
-pushSmStack x sm =  smStack %~ (\s -> push x s) $ sm
-
+pushSmStack x sm = smStack %~ (\s -> push x s) $ sm
 
 -- | Loads an value onto the stack.
 loadVal :: Int -> StackMachine -> CompRes
@@ -96,21 +100,21 @@ readVar ln identifier sm =
 
 -- | Writes the top of the stack to the enviroment using the identifier.
 writeVar :: Int -> Text.Text -> Int -> StackMachine -> CompRes
-writeVar ln identifier val sm
-    = case pop (sm ^. smStack) of
-        Nothing       -> Left $ VarNone ln identifier
+writeVar ln identifier val sm =
+    case pop (sm ^. smStack) of
+        Nothing -> Left $ VarNone ln identifier
         Just (_st, a) -> Right $ SMRes $ incrementSmPc $ onSmEnviroment (Map.insert identifier val) sm
-  where 
-      onSmEnviroment f sm_ = smEnviroment %~ f $ sm_ 
+  where
+    onSmEnviroment f sm_ = smEnviroment %~ f $ sm_
 
 -- | Returns value at the top of the stack
 returnVal :: Int -> StackMachine -> CompRes
 returnVal ln sm =
     case pop (sm ^. smStack) of
-        Nothing     -> Left $ ShortStack ln
+        Nothing -> Left $ ShortStack ln
         Just (_, x) -> Right $ ValRes x
-    
-type SmRegisterGetter = Getter.Getting Int StackMachine Int 
+
+type SmRegisterGetter = Getter.Getting Int StackMachine Int
 
 savePC :: StackMachine -> CompRes
 savePC sm = Right $ SMRes $ lr .~ (sm ^. pc) $ sm
@@ -118,7 +122,7 @@ savePC sm = Right $ SMRes $ lr .~ (sm ^. pc) $ sm
 readSmReg :: SmRegisterGetter -> StackMachine -> CompRes
 readSmReg regGetter sm = Right $ SMRes $ incrementSmPc $ newSm
   where
-    newStack = push (sm ^. regGetter) (sm ^. smStack) 
+    newStack = push (sm ^. regGetter) (sm ^. smStack)
     newSm = smStack .~ newStack $ sm
 
 readPC :: StackMachine -> CompRes
@@ -133,9 +137,9 @@ readLR = readSmReg lr
 type SmRegisterSetter = ASetter StackMachine StackMachine Int Int
 
 loadSmReg :: SmRegisterSetter -> Int -> StackMachine -> CompRes
-loadSmReg regSetter ln sm = 
+loadSmReg regSetter ln sm =
     case pop (sm ^. smStack) of
-        Nothing      -> Left $ ShortStack ln
+        Nothing -> Left $ ShortStack ln
         Just (xs, x) -> Right $ SMRes $ incrementSmPc $ regSetter .~ x $ smStack .~ xs $ sm
 
 loadPC :: Int -> StackMachine -> CompRes
@@ -148,22 +152,23 @@ loadLR :: Int -> StackMachine -> CompRes
 loadLR = loadSmReg lr
 
 jump :: (Int -> Int -> Bool) -> StackMachine -> CompRes
-jump f sm = Right $ SMRes $ pc .~ newPc $ sm 
-  where 
-    newPc = if f (sm ^. ac) 0 
+jump f sm = Right $ SMRes $ pc .~ newPc $ sm
+  where
+    newPc =
+        if f (sm ^. ac) 0
             then sm ^. lr
             else sm ^. pc
 
-je  :: StackMachine -> CompRes
+je :: StackMachine -> CompRes
 je = jump (==)
 
-jl  :: StackMachine -> CompRes
+jl :: StackMachine -> CompRes
 jl = jump (<)
 
 jle :: StackMachine -> CompRes
 jle = jump (<=)
 
-jg  :: StackMachine -> CompRes
+jg :: StackMachine -> CompRes
 jg = jump (>)
 
 jge :: StackMachine -> CompRes
@@ -171,8 +176,8 @@ jge = jump (>=)
 
 binStackOp :: (Int -> Int -> Int) -> Int -> StackMachine -> CompRes
 binStackOp f ln sm = case popApply f (sm ^. smStack) of
-    Nothing  -> Left $ ShortStack ln
-    Just xs -> Right $ SMRes $ smStack .~ xs $ sm 
+    Nothing -> Left $ ShortStack ln
+    Just xs -> Right $ SMRes $ smStack .~ xs $ sm
 
 -- | Executes Add Command
 add :: Int -> StackMachine -> CompRes
