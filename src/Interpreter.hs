@@ -7,8 +7,8 @@ import qualified Data.Vector as Vector
 import StackMachine
 import Token
 
-runToken :: StackMachine -> CompRes
-runToken sm =
+runToken_ :: StackMachine -> CompRes
+runToken_ sm =
     case pc_ >= Vector.length ins of
         True -> Right $ NullExit
         False -> case bc of
@@ -38,8 +38,8 @@ runToken sm =
     pc_ = sm ^. pc
     (ln, bc) = ins Vector.! pc_
 
-runTokens :: CompRes -> CompRes
-runTokens res = case res of
+runToken :: CompRes -> CompRes
+runToken res = case res of
     Left l -> Left l
     Right r -> case r of
         ValRes v -> Right $ ValRes v
