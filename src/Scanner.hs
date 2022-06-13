@@ -71,5 +71,11 @@ processNullLine acc (ln, l) =
 nonEmptyLines :: Text.Text -> Vector.Vector (Int, Text.Text)
 nonEmptyLines t = foldl processNullLine Vector.empty $ numberLines t
 
-scanLines :: Text.Text -> Vector.Vector ScanRes
-scanLines = Vector.map scanLine . nonEmptyLines
+scanLines :: Text.Text -> Vector.Vector ScanRes -> Either ScanErr (Vector.Vector Token)
+scanLines t = Vector.foldl parse (Right Vector.empty)  --raw 
+  where
+    raw = Vector.map scanLine $ nonEmptyLines t
+
+    parse (Right acc) (Right r2) = Right $ acc <> Vector.singleton r2
+    parse (Left e)    _          = Left e
+    parse  _          (Left e)   = Left e

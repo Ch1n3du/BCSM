@@ -1,5 +1,7 @@
 module Interpreter (
-    ) where
+  runToken,
+  runTokens
+) where
 
 import Control.Lens hiding (element)
 import qualified Data.Vector as Vector
@@ -44,12 +46,12 @@ runToken res = case res of
     Right r -> case r of
         ValRes v -> Right $ ValRes v
         DebugRes s -> Right $ DebugRes s
-        SMRes sm -> runToken sm
+        SMRes sm -> runToken_ sm
 
-runTokensTillExit :: CompRes -> CompRes
-runTokensTillExit res = case res of
+runTokens :: CompRes -> CompRes
+runTokens res = case res of
     Left l -> Left l
     Right r -> case r of
         ValRes v -> Right $ ValRes v
         DebugRes s -> Right $ DebugRes s
-        SMRes sm -> runTokensTillExit $ runToken sm
+        SMRes sm -> runTokens $ runToken_ sm
