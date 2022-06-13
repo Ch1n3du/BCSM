@@ -16,7 +16,7 @@ runToken sm =
     False -> case bc of
         LoadVal v    -> loadVal v sm
         ReadVar l    -> readVar ln l sm
-        WriteVar l v -> writeVar ln l v sm
+        WriteVar l -> writeVar ln l sm
         ReturnVal    -> returnVal ln sm
         SavePC       -> savePC sm
         ReadPC       -> readPC sm
@@ -39,3 +39,11 @@ runToken sm =
     ins = sm ^. smInstructions
     pc_ = sm ^. pc
     (ln, bc) = ins Vector.! pc_
+
+runTokens :: CompRes -> CompRes
+runTokens res = case res of
+  Left l  -> Left l
+  Right r -> case r of
+    ValRes v   -> Right $ ValRes v
+    DebugRes s -> Right $ DebugRes s
+    SMRes sm   -> runToken sm

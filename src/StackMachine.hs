@@ -99,11 +99,11 @@ readVar ln identifier sm =
         Just x -> Right $ SMRes $ incrementSmPc $ pushSmStack x sm
 
 -- | Writes the top of the stack to the enviroment using the identifier.
-writeVar :: Int -> Text.Text -> Int -> StackMachine -> CompRes
-writeVar ln identifier val sm =
+writeVar :: Int -> Text.Text -> StackMachine -> CompRes
+writeVar ln identifier sm =
     case pop (sm ^. smStack) of
         Nothing -> Left $ VarNone ln identifier
-        Just (_st, a) -> Right $ SMRes $ incrementSmPc $ onSmEnviroment (Map.insert identifier val) sm
+        Just (_st, val) -> Right $ SMRes $ incrementSmPc $ onSmEnviroment (Map.insert identifier val) sm
   where
     onSmEnviroment f sm_ = smEnviroment %~ f $ sm_
 
