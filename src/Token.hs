@@ -12,7 +12,7 @@ data ByteCode
     | -- | Push value from memory to the stack.
       ReadVar Text.Text
     | -- | Write value at the top of the stack to the enviroment.
-      WriteVar Text.Text 
+      WriteVar Text.Text
     | -- | Return value at the top of the stack.
       ReturnVal
     | -- | Set LR = PC
