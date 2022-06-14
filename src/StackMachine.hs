@@ -8,6 +8,7 @@ module StackMachine (
     ac,
     lr,
     smEnviroment,
+    smFromTokens,
     CompErr (..),
     CompOk (..),
     CompRes (..),
@@ -57,11 +58,11 @@ data StackMachine = StackMachine
 
 makeLenses ''StackMachine
 
-smFromTokens :: Vector.Vector Token -> StackMachine
+smFromTokens :: [Token] -> StackMachine
 smFromTokens ins =
     StackMachine
         { _smStack = []
-        , _smInstructions = ins
+        , _smInstructions = Vector.fromList ins
         , _pc = 0
         , _ac = 0
         , _lr = 0
@@ -72,12 +73,14 @@ data CompErr
     = VarNone Int Text.Text
     | ShortStack Int
     | Undefined Int
+    deriving (Show)
 
 data CompOk
     = SMRes StackMachine
     | ValRes Int
     | DebugRes Text.Text
-    | NullExit
+    | NullExit StackMachine
+    deriving (Show)
 
 type CompRes = Either CompErr CompOk
 
@@ -117,7 +120,7 @@ returnVal ln sm =
 type SmRegisterGetter = Getter.Getting Int StackMachine Int
 
 savePC :: StackMachine -> CompRes
-savePC sm = Right $ SMRes $ lr .~ (sm ^. pc) $ sm
+savePC sm = Right $ SMRes $ incrementSmPc $ lr .~ (sm ^. pc) $ sm
 
 readSmReg :: SmRegisterGetter -> StackMachine -> CompRes
 readSmReg regGetter sm = Right $ SMRes $ incrementSmPc $ newSm
@@ -152,7 +155,7 @@ loadLR :: Int -> StackMachine -> CompRes
 loadLR = loadSmReg lr
 
 jump :: (Int -> Int -> Bool) -> StackMachine -> CompRes
-jump f sm = Right $ SMRes $ pc .~ newPc $ sm
+jump f sm = Right $ SMRes $ incrementSmPc $ pc .~ newPc $ sm
   where
     newPc =
         if f (sm ^. ac) 0
@@ -177,7 +180,7 @@ jge = jump (>=)
 binStackOp :: (Int -> Int -> Int) -> Int -> StackMachine -> CompRes
 binStackOp f ln sm = case popApply f (sm ^. smStack) of
     Nothing -> Left $ ShortStack ln
-    Just xs -> Right $ SMRes $ smStack .~ xs $ sm
+    Just xs -> Right $ SMRes $ incrementSmPc $ smStack .~ xs $ sm
 
 -- | Executes Add Command
 add :: Int -> StackMachine -> CompRes
@@ -197,3 +200,14 @@ div_ = binStackOp (div)
 
 debugSM :: StackMachine -> CompRes
 debugSM sm = Right $ DebugRes $ Text.pack $ show sm
+
+-- LOAD_VAL 1
+-- ADD
+
+-- READ_AC
+-- LOAD_VAL 1
+-- SUB
+-- LOAD_AC
+
+-- JG
+-- DEBUG_SM

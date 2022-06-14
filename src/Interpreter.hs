@@ -1,6 +1,9 @@
 module Interpreter (
-  runToken,
-  runTokens
+    runCurrentToken,
+    runToken',
+    runToken,
+    runTokensTillEnd',
+    runTokensTillEnd,
 ) where
 
 import Control.Lens hiding (element)
@@ -9,11 +12,11 @@ import qualified Data.Vector as Vector
 import StackMachine
 import Token
 
-runToken_ :: StackMachine -> CompRes
-runToken_ sm =
-    case pc_ >= Vector.length ins of
-        True -> Right $ NullExit
-        False -> case bc of
+runCurrentToken :: StackMachine -> CompRes
+runCurrentToken sm =
+    case curr_in of
+        Nothing -> Right $ NullExit sm
+        Just (ln, bc) -> case bc of
             LoadVal v -> loadVal v sm
             ReadVar l -> readVar ln l sm
             WriteVar l -> writeVar ln l sm
@@ -38,20 +41,27 @@ runToken_ sm =
   where
     ins = sm ^. smInstructions
     pc_ = sm ^. pc
-    (ln, bc) = ins Vector.! pc_
+    curr_in =
+        if pc_ < length ins
+            then Just $ ins Vector.! (pc_)
+            else Nothing
 
-runToken :: CompRes -> CompRes
-runToken res = case res of
+runToken' :: CompRes -> CompRes
+runToken' res = case res of
     Left l -> Left l
     Right r -> case r of
-        ValRes v -> Right $ ValRes v
-        DebugRes s -> Right $ DebugRes s
-        SMRes sm -> runToken_ sm
+        SMRes sm -> runCurrentToken sm
+        rest -> Right $ rest
 
-runTokens :: CompRes -> CompRes
-runTokens res = case res of
+runToken :: [Token] -> CompRes
+runToken ts = runToken' $ Right $ SMRes $ smFromTokens ts
+
+runTokensTillEnd' :: CompRes -> CompRes
+runTokensTillEnd' res = case res of
     Left l -> Left l
     Right r -> case r of
-        ValRes v -> Right $ ValRes v
-        DebugRes s -> Right $ DebugRes s
-        SMRes sm -> runTokens $ runToken_ sm
+        SMRes sm -> runTokensTillEnd' $ runCurrentToken sm
+        rest -> Right rest
+
+runTokensTillEnd :: [Token] -> CompRes
+runTokensTillEnd ts = runTokensTillEnd' $ Right $ SMRes $ smFromTokens ts

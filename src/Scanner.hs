@@ -1,6 +1,8 @@
 module Scanner (
+    ScanRes,
     scanLine,
-    scanLines
+    scanLines,
+    cleanLines,
 ) where
 
 import qualified Data.Char as Char
@@ -13,11 +15,12 @@ data ScanErr
     = UnexpectedNumberOfTokens Int
     | ExpectedNumber Int Text.Text
     | UnknownToken Int Text.Text
-    deriving Show
+    deriving (Show)
 
-type ScanRes = Either ScanErr Token
+type ScanRes = Either ScanErr [Token]
+type ScanRes_ = Either ScanErr Token
 
-scanLine :: (Int, Text.Text) -> ScanRes
+scanLine :: (Int, Text.Text) -> ScanRes_
 scanLine (ln, lexeme) =
     case length pieces of
         1 ->
@@ -39,6 +42,7 @@ scanLine (ln, lexeme) =
                 "RETURN_VAL" -> wrap ReturnVal
                 "SAVE_PC" -> wrap SavePC
                 "READ_PC" -> wrap ReadPC
+                "DEBUG_SM" -> wrap DebugSM
                 _ -> Left $ UnknownToken ln arg_1
         2 ->
             case arg_1 of
@@ -48,6 +52,7 @@ scanLine (ln, lexeme) =
                     if isNumber arg_2
                         then wrap $ LoadVal (read arg_2_ :: Int)
                         else Left $ ExpectedNumber ln arg_2
+                _ -> Left $ UnknownToken ln arg_1
         _ -> Left $ UnexpectedNumberOfTokens ln
   where
     pieces = Text.words lexeme
@@ -55,27 +60,23 @@ scanLine (ln, lexeme) =
     arg_2 = pieces !! 1
     arg_2_ = Text.unpack arg_2
 
+    wrap :: ByteCode -> ScanRes_
     wrap t = Right $ (ln, t)
     isNumber = Text.all Char.isDigit
 
-numberLines :: Text.Text -> [(Int, Text.Text)]
-numberLines t = zip [1..] $ Text.lines t
-
-processNullLine :: Vector.Vector (Int, Text.Text) -> (Int, Text.Text) -> Vector.Vector (Int, Text.Text)
-processNullLine acc (ln, l) = 
-        if Text.null strippedL
-        then acc
-        else acc <> Vector.singleton (ln, strippedL)
-    where strippedL = Text.strip l
-    
-nonEmptyLines :: Text.Text -> Vector.Vector (Int, Text.Text)
-nonEmptyLines t = foldl processNullLine Vector.empty $ numberLines t
-
-scanLines :: Text.Text -> Vector.Vector ScanRes -> Either ScanErr (Vector.Vector Token)
-scanLines t = Vector.foldl parse (Right Vector.empty)  --raw 
+cleanLines :: Text.Text -> [(Int, Text.Text)]
+cleanLines = filterNulls . stripComments . numberLines 
   where
-    raw = Vector.map scanLine $ nonEmptyLines t
+    numberLines t  = zip [1 ..] $ map Text.strip $ (Text.lines t)
+    stripComments = map (\(ln, l) -> (ln, head $ Text.splitOn "//" l))
+    filterNulls    = filter (\(ln, l) -> not $ Text.null l)
 
-    parse (Right acc) (Right r2) = Right $ acc <> Vector.singleton r2
-    parse (Left e)    _          = Left e
-    parse  _          (Left e)   = Left e
+scanLines :: Text.Text -> ScanRes
+scanLines t = foldl parse (Right []) raw
+  where
+    raw :: [ScanRes_]
+    raw = (map scanLine) $ cleanLines t
+
+    parse (Right acc) (Right r2) = Right $ acc ++ [r2]
+    parse (Left e) _ = Left e
+    parse _ (Left e) = Left e

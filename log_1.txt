@@ -1,0 +1,19 @@
+
+LINES:
+________________
+
+[(2,"LOAD_VAL 5"),(3,"LOAD_AC"),(5,"LOAD_VAL 0"),(9,"SAVE_PC"),(11,"LOAD_VAL 1"),(12,"ADD"),(13,"DEBUG_SM"),(16,"LOAD_VAL 1"),(17,"READ_AC"),(18,"SUB"),(19,"LOAD_AC"),(24,"JG"),(26,"RETURN_VAL")]
+
+
+TOKENS:
+________________
+
+Right [(2,LoadVal 5),(3,LoadAC),(5,LoadVal 0),(9,SavePC),(11,LoadVal 1),(12,Add),(13,DebugSM),(16,LoadVal 1),(17,ReadAC),(18,Sub),(19,LoadAC),(24,JG),(26,ReturnVal)]
+
+
+RESULT:
+________________
+
+Right (DebugRes "StackMachine {_smStack = [1], _smInstructions = [(2,LoadVal 5),(3,LoadAC),(5,LoadVal 0),(9,SavePC),(11,LoadVal 1),(12,Add),(13,DebugSM),(16,LoadVal 1),(17,ReadAC),(18,Sub),(19,LoadAC),(24,JG),(26,ReturnVal)], _pc = 6, _ac = 5, _lr = 3, _smEnviroment = fromList []}")
+
+

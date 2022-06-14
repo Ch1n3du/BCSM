@@ -27,7 +27,7 @@ data ByteCode
       LoadPC
     | -- | Set AC to the value at the top of the stack.
       LoadAC
-    | -- | Set PC to the value at the top of the stack.
+    | -- | Set LR to the value at the top of the stack.
       LoadLR
     | -- | if ac == o then pc = ac
       JE
@@ -48,3 +48,7 @@ data ByteCode
     deriving (Show, Eq)
 
 type Token = (Int, ByteCode)
+
+showToken :: Token -> String
+showToken (ln, t) 
+  = mconcat [ "Line ", show ln, ": ", ]
