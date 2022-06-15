@@ -1,0 +1,24 @@
+// While loop
+// Add x five times
+
+LOAD_VAL 5 // x
+LOAD_AC
+
+// Initial Value
+LOAD_VAL 0
+
+// LR = PC
+SAVE_PC
+
+LOAD_VAL 1
+ADD
+
+// Dectement Counter
+LOAD_VAL 1
+READ_AC 
+SUB
+LOAD_AC
+
+JG
+
+RETURN_VAL

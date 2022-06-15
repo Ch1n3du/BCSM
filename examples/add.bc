@@ -1,26 +1,5 @@
-// AC = 5
-LOAD_VAL 5
-LOAD_AC
-
-LOAD_VAL 0
-
-// LOOP START
-// PC -> LR
-SAVE_PC
-
-LOAD_VAL 2
-ADD
-DEBUG_SM // Print StackMachine
-
-// AC--
-LOAD_VAL 1
-READ_AC
-SUB
-LOAD_AC
-// DEBUG_SM
-
-
-// if AC > 0 then PC = LR
-JG
+// Simple Addition
+LOAD_VAL 26
+LOAD_VAL 43
 
 RETURN_VAL
