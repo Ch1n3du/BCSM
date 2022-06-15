@@ -10,6 +10,7 @@ LOAD_VAL 0
 // LR = PC
 SAVE_PC
 
+// Initial Value ++
 LOAD_VAL 1
 ADD
 
