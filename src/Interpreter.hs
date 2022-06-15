@@ -37,7 +37,7 @@ runCurrentToken sm =
             Sub -> sub ln sm
             Mul -> mul ln sm
             Div -> div_ ln sm
-            DebugSM -> debugSM sm
+            DebugSM -> debugSM ln sm
   where
     ins = sm ^. smInstructions
     pc_ = sm ^. pc

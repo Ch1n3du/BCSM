@@ -10,7 +10,7 @@ SAVE_PC
 
 LOAD_VAL 2
 ADD
-// DEBUG_SM
+DEBUG_SM // Print StackMachine
 
 // AC--
 LOAD_VAL 1

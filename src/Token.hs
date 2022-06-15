@@ -1,9 +1,12 @@
 module Token (
     ByteCode (..),
     Token (..),
+    showToken,
+    showTokens
 ) where
 
 import qualified Data.Text as Text
+import qualified Data.Vector as Vector
 
 -- | ByteCode Grammer
 data ByteCode
@@ -51,4 +54,7 @@ type Token = (Int, ByteCode)
 
 showToken :: Token -> String
 showToken (ln, t) 
-  = mconcat [ "Line ", show ln, ": ", ]
+  = mconcat [ "Line ", show ln, " -> ", show t ]
+
+showTokens :: Vector.Vector Token -> String
+showTokens = Vector.foldl (\acc tok -> acc ++ "\n\t" ++ showToken tok) mempty

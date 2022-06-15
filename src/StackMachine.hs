@@ -47,25 +47,34 @@ import Token
 type Enviroment = Map.Map Text.Text Int
 
 data StackMachine = StackMachine
-    { _smStack :: Stack Int
-    , _smInstructions :: Vector.Vector Token
-    , _pc :: Int
+    { _pc :: Int
     , _ac :: Int
     , _lr :: Int
     , _smEnviroment :: Enviroment
+    , _smStack :: Stack Int
+    , _smInstructions :: Vector.Vector Token
     }
-    deriving (Show)
 
 makeLenses ''StackMachine
+
+instance Show StackMachine where
+    show s = mconcat [ "\nStack: ", show (s ^. smStack), "\n"
+                     , "Program Counter: ", show (s ^. pc), "\n"
+                     , "Accumulator: ", show (s ^. ac), "\n"
+                     , "Loop Register: ", show (s ^. lr), "\n"
+                     , "Enviroment: ", show (s ^. smEnviroment), "\n"
+                     , "Instructions: ", showTokens (s ^. smInstructions)
+                     ]
+
 
 smFromTokens :: [Token] -> StackMachine
 smFromTokens ins =
     StackMachine
         { _smStack = []
         , _smInstructions = Vector.fromList ins
-        , _pc = 0
-        , _ac = 0
-        , _lr = 0
+        , _pc = 0                                -- ^ Program Counter
+        , _ac = 0                                -- ^ Accumulator
+        , _lr = 0                                -- ^ Loop Register
         , _smEnviroment = Map.empty
         }
 
@@ -73,14 +82,26 @@ data CompErr
     = VarNone Int Text.Text
     | ShortStack Int
     | Undefined Int
-    deriving (Show)
+
+instance Show CompErr where
+    show (VarNone ln identifier) = mconcat ["No such variable as ", Text.unpack identifier, " on line ", show ln, "."]
+    show (ShortStack ln)         = mconcat ["Stack too short for operation on line ", show ln, "."]
+    show (Undefined ln)          = mconcat ["Undefined error on line ", show ln, "."]
 
 data CompOk
     = SMRes StackMachine
     | ValRes Int
-    | DebugRes Text.Text
+    | DebugRes Int Text.Text
     | NullExit StackMachine
-    deriving (Show)
+
+ul :: String
+ul = "\n_________________"
+
+instance Show CompOk where
+    show (SMRes sm)      = mconcat ["\nNONEXITED_SM:\n", ul, show sm]
+    show (ValRes v)      = mconcat ["\nRETURNED_VALUE: ", show v]
+    show (DebugRes ln s) = mconcat ["\n\nDEBUG_SNAPSHOT ", "\nLINE: ", show ln, "\n", Text.unpack s]
+    show (NullExit sm)   = mconcat ["\nEXITED_SM:\n", ul, show sm]
 
 type CompRes = Either CompErr CompOk
 
@@ -119,6 +140,7 @@ returnVal ln sm =
 
 type SmRegisterGetter = Getter.Getting Int StackMachine Int
 
+-- | Saves PC to LR
 savePC :: StackMachine -> CompRes
 savePC sm = Right $ SMRes $ incrementSmPc $ lr .~ (sm ^. pc) $ sm
 
@@ -198,8 +220,8 @@ mul = binStackOp (*)
 div_ :: Int -> StackMachine -> CompRes
 div_ = binStackOp (div)
 
-debugSM :: StackMachine -> CompRes
-debugSM sm = Right $ DebugRes $ Text.pack $ show sm
+debugSM :: Int -> StackMachine -> CompRes
+debugSM ln sm = Right $ DebugRes ln $ Text.pack $ show sm
 
 -- LOAD_VAL 1
 -- ADD
