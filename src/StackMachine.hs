@@ -35,7 +35,7 @@ module StackMachine (
     debugSM,
 ) where
 
-import Control.Lens hiding (element)
+import Control.Lens hiding (element,)
 import qualified Control.Lens.Getter as Getter
 import qualified Data.Map as Map
 import qualified Data.Text as Text

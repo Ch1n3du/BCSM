@@ -78,5 +78,5 @@ scanLines t = foldl parse (Right []) raw
     raw = (map scanLine) $ cleanLines t
 
     parse (Right acc) (Right r2) = Right $ acc ++ [r2]
-    parse (Left e) _ = Left e
-    parse _ (Left e) = Left e
+    parse (Left e)    _ = Left e
+    parse _           (Left e) = Left e

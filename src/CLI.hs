@@ -1,3 +1,4 @@
+-- Core CLI functions
 module CLI (
     runCLI,
 ) where

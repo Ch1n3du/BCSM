@@ -7,6 +7,7 @@ import qualified System.Environment as Environment
 import CLI
 import Interpreter
 
+-- Main Function
 main :: IO ()
 main = do
     args_ <- Environment.getArgs

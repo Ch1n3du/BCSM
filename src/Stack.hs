@@ -1,9 +1,9 @@
 module Stack (
     Stack (..),
-    push,
     pop,
     popTwo,
     popApply,
+    push,
 ) where
 
 type Stack a = [a]

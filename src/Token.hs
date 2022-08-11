@@ -24,7 +24,7 @@ data ByteCode
       ReadPC
     | -- | Pushes AC to the stack.
       ReadAC
-    | -- | Pushes value in LR to the stack.
+    | -- | Pushes the value in LR to the stack.
       ReadLR
     | -- | Set PC to the value at the top of the stack.
       LoadPC
